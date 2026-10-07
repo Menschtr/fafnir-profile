@@ -37,12 +37,30 @@
           <div class="pick">
             <strong>Avatar</strong>
             <input type="file" id="avatarFile" accept="image/*" />
-            <p class="hint">Kare kırpılır, 256×256'ya küçültülür.</p>
+            <div class="editor" id="avatarEditor" hidden>
+              <canvas class="editor-view" id="avatarView" width="272" height="272"></canvas>
+              <div class="zoom-row">
+                <span class="zoom-label" aria-hidden="true">Uzak</span>
+                <input type="range" id="avatarZoom" min="100" max="400" value="100" aria-label="Avatar yakınlaştırma" />
+                <span class="zoom-label" aria-hidden="true">Yakın</span>
+                <button type="button" id="avatarReset" class="ghost">Sıfırla</button>
+              </div>
+            </div>
+            <p class="hint">Kare kırpılır → 256×256. Görüntüyü sürükle, slider ile yakınlaştır.</p>
           </div>
           <div class="pick">
             <strong>Banner</strong>
             <input type="file" id="bannerFile" accept="image/*" />
-            <p class="hint">Şeride kırpılır, 1200×420'ye küçültülür.</p>
+            <div class="editor" id="bannerEditor" hidden>
+              <canvas class="editor-view" id="bannerView" width="340" height="119"></canvas>
+              <div class="zoom-row">
+                <span class="zoom-label" aria-hidden="true">Uzak</span>
+                <input type="range" id="bannerZoom" min="100" max="400" value="100" aria-label="Banner yakınlaştırma" />
+                <span class="zoom-label" aria-hidden="true">Yakın</span>
+                <button type="button" id="bannerReset" class="ghost">Sıfırla</button>
+              </div>
+            </div>
+            <p class="hint">Şeride kırpılır → 1200×420. Sürükle, hangi kısmın görüneceğini seç.</p>
           </div>
         </div>
         <p class="sizes" id="sizes">görsel seçilmedi</p>
@@ -63,20 +81,18 @@
       </section>
 
       <section>
-        <h2><span>4</span> İmza ve yayın</h2>
+        <h2><span>4</span> Yayınla</h2>
 
-        <label for="pass">KARE şifresi</label>
+        <label for="pass">Şifre</label>
         <input type="password" id="pass" autocomplete="new-password" />
         <p class="hint">
-          Bu şifre <strong>Fafnir → Ayarlar → Profil komuta merkezi</strong> ile aynı olmalıdır.
-          Şifre tarayıcıdan hiç çıkmaz; yalnızca anahtar türetilir.
+          <strong>Fafnir → Ayarlar → Profil komuta merkezi</strong> ile aynı şifre.
         </p>
 
         <label for="pat">GitHub token (PAT)</label>
         <div class="pat-row">
           <input type="password" id="pat" autocomplete="off" spellcheck="false" />
-          <button type="button" id="patSave" class="ghost">Kaydet</button>
-          <button type="button" id="patForget" class="ghost">Unut</button>
+          <button type="button" id="patClear" class="ghost">Sil</button>
         </div>
         <p class="hint" id="patHint">
           Fine-grained token · tek repo · Contents: Read and write.
@@ -86,9 +102,7 @@
         </p>
 
         <div class="actions">
-          <button type="button" id="publish" class="primary">Kaydet ve yayınla</button>
-          <button type="button" id="verify">Doğrula</button>
-          <button type="button" id="download" class="ghost">İndir</button>
+          <button type="button" id="publish" class="primary">Yayınla</button>
         </div>
         <p class="status" id="status" role="status" aria-live="polite"></p>
       </section>
@@ -103,7 +117,7 @@
               <button type="button" id="copyUrl" class="ghost">Kopyala</button>
             </div>
           </li>
-          <li>Aynı KARE şifresini yaz ve <strong>Kaydet</strong>'e bas.</li>
+          <li>Aynı şifreyi yaz ve <strong>Kaydet</strong>'e bas.</li>
           <li>Yenileme kısa süre içinde kendiliğinden yapılır; profil sayfasını yenile.</li>
         </ol>
       </section>

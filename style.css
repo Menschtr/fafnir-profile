@@ -120,6 +120,53 @@ input:focus {
   font-size: 14px;
 }
 
+.editor {
+  margin-top: 10px;
+}
+
+.editor-view {
+  display: block;
+  width: 100%;
+  max-width: 272px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #0b0d12;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+}
+
+#bannerView {
+  max-width: 340px;
+}
+
+.editor-view.dragging {
+  cursor: grabbing;
+}
+
+.zoom-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.zoom-label {
+  font-size: 12px;
+  color: var(--dim);
+}
+
+.zoom-row input[type="range"] {
+  flex: 1;
+  min-width: 60px;
+  accent-color: var(--accent);
+}
+
+.zoom-row button {
+  padding: 6px 10px;
+  font-size: 13px;
+}
+
 .sizes {
   margin: 12px 0 0;
   font-family: ui-monospace, Consolas, monospace;

@@ -27,6 +27,8 @@
   var BANNER_H = 420;
   var AVATAR_BUDGET = 130 * 1024;
   var BANNER_BUDGET = 520 * 1024;
+  var RATIO = { avatar: 1, banner: BANNER_W / BANNER_H };
+  var VIEW = { avatar: [272, 272], banner: [340, 119] };
 
   var $ = function (id) {
     return document.getElementById(id);
@@ -36,6 +38,7 @@
     avatar: null,
     banner: null,
     pat: localStorage.getItem(PAT_KEY) || "",
+    crops: { avatar: null, banner: null },
   };
 
   var ERR = {
@@ -81,17 +84,76 @@
     });
   }
 
-  function crop(img, targetW, targetH) {
-    var scale = Math.max(targetW / img.width, targetH / img.height);
-    var sw = targetW / scale;
-    var sh = targetH / scale;
-    var sx = (img.width - sw) / 2;
-    var sy = (img.height - sh) / 2;
+  function clamp(v, min, max) {
+    return v < min ? min : v > max ? max : v;
+  }
+
+  function initCrop(img, ratio) {
+    var sw, sh;
+    if (img.width / img.height > ratio) {
+      sh = img.height;
+      sw = sh * ratio;
+    } else {
+      sw = img.width;
+      sh = sw / ratio;
+    }
+    return {
+      img: img,
+      ratio: ratio,
+      baseW: sw,
+      baseH: sh,
+      sx: (img.width - sw) / 2,
+      sy: (img.height - sh) / 2,
+      sw: sw,
+      sh: sh,
+    };
+  }
+
+  function zoomCrop(crop, t) {
+    var cx = crop.sx + crop.sw / 2;
+    var cy = crop.sy + crop.sh / 2;
+    crop.sw = crop.baseW / t;
+    crop.sh = crop.baseH / t;
+    crop.sx = clamp(cx - crop.sw / 2, 0, crop.img.width - crop.sw);
+    crop.sy = clamp(cy - crop.sh / 2, 0, crop.img.height - crop.sh);
+  }
+
+  function paint(canvas, crop, w, h) {
+    canvas.width = w;
+    canvas.height = h;
+    canvas.getContext("2d").drawImage(crop.img, crop.sx, crop.sy, crop.sw, crop.sh, 0, 0, w, h);
+  }
+
+  function renderView(kind) {
+    var crop = state.crops[kind];
+    if (!crop) return;
+    var v = VIEW[kind];
+    paint($(kind === "avatar" ? "avatarView" : "bannerView"), crop, v[0], v[1]);
+  }
+
+  var gen = { avatar: 0, banner: 0 };
+  var regenTimers = { avatar: null, banner: null };
+
+  async function produce(kind) {
+    var crop = state.crops[kind];
+    if (!crop) return;
+    var my = ++gen[kind];
+    var w = kind === "avatar" ? AVATAR_SIZE : BANNER_W;
+    var h = kind === "avatar" ? AVATAR_SIZE : BANNER_H;
+    var budget = kind === "avatar" ? AVATAR_BUDGET : BANNER_BUDGET;
     var canvas = document.createElement("canvas");
-    canvas.width = targetW;
-    canvas.height = targetH;
-    canvas.getContext("2d").drawImage(img, sx, sy, sw, sh, 0, 0, targetW, targetH);
-    return canvas;
+    paint(canvas, crop, w, h);
+    var url = await encode(canvas, budget);
+    if (my !== gen[kind]) return; /* bu sırada görüntü değişti: geçersiz üretim */
+    state[kind] = url;
+    refresh();
+  }
+
+  function regenerate(kind) {
+    clearTimeout(regenTimers[kind]);
+    regenTimers[kind] = setTimeout(function () {
+      void produce(kind);
+    }, 200);
   }
 
   function canvasToUrl(canvas, type, quality) {
@@ -131,13 +193,12 @@
     say(kind === "avatar" ? "Avatar işleniyor…" : "Banner işleniyor…");
     try {
       var img = await loadImage(file);
-      var canvas =
-        kind === "avatar" ? crop(img, AVATAR_SIZE, AVATAR_SIZE) : crop(img, BANNER_W, BANNER_H);
-      var budget = kind === "avatar" ? AVATAR_BUDGET : BANNER_BUDGET;
-      var url = await encode(canvas, budget);
-      state[kind] = url;
+      state.crops[kind] = initCrop(img, RATIO[kind]);
+      $(kind === "avatar" ? "avatarEditor" : "bannerEditor").hidden = false;
+      $(kind === "avatar" ? "avatarZoom" : "bannerZoom").value = 100;
+      renderView(kind);
+      await produce(kind);
       say("");
-      refresh();
     } catch (error) {
       say("Görsel işlenemedi: " + error.message, "err");
     }
@@ -296,61 +357,6 @@
     }
   }
 
-  async function verifyRemote() {
-    var password = $("pass").value;
-    if (!password) {
-      say(ERR["sifre-gerekli"], "err");
-      return;
-    }
-    $("verify").disabled = true;
-    say("Uzak dosya çekiliyor…");
-    try {
-      var text = await fetchRaw();
-      await KARE.verify(text, password);
-      say("Uzak dosya geçerli — uygulama bunu kabul eder ✓", "ok");
-    } catch (error) {
-      say(ERR[error.message] || error.message, "err");
-    } finally {
-      $("verify").disabled = false;
-    }
-  }
-
-  function download() {
-    if (!state.avatar && !state.banner) {
-      say("Önce en az bir görsel seç.", "err");
-      return;
-    }
-    var password = $("pass").value;
-    if (!password) {
-      say(ERR["sifre-gerekli"], "err");
-      return;
-    }
-    KARE.build({
-      password: password,
-      fenridId: $("fenridId").value.trim() || "unknown",
-      avatar: state.avatar,
-      banner: state.banner,
-    }).then(
-      function (built) {
-        var blob = new Blob([built.text], { type: "application/json" });
-        var url = URL.createObjectURL(blob);
-        var a = document.createElement("a");
-        a.href = url;
-        a.download = "fafnir-profiles.json";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        setTimeout(function () {
-          URL.revokeObjectURL(url);
-        }, 4000);
-        say("Dosya indirildi (elle yayınlamak için).", "ok");
-      },
-      function (error) {
-        say(ERR[error.message] || error.message, "err");
-      }
-    );
-  }
-
   /* ---------------- bağlantılar ---------------- */
 
   $("avatarFile").addEventListener("change", function (e) {
@@ -361,24 +367,83 @@
   });
   $("fenridId").addEventListener("input", refresh);
   $("publish").addEventListener("click", publish);
-  $("verify").addEventListener("click", verifyRemote);
-  $("download").addEventListener("click", download);
 
-  $("patSave").addEventListener("click", function () {
-    state.pat = $("pat").value.trim();
-    if (state.pat) {
-      localStorage.setItem(PAT_KEY, state.pat);
-      say("Token kaydedildi (yalnızca bu tarayıcıda).", "ok");
-    } else {
-      say("Token alanı boş.", "err");
-    }
+  $("pat").addEventListener("input", function () {
+    var v = $("pat").value.trim();
+    state.pat = v;
+    if (v) localStorage.setItem(PAT_KEY, v);
+    else localStorage.removeItem(PAT_KEY);
   });
-  $("patForget").addEventListener("click", function () {
+  $("patClear").addEventListener("click", function () {
     state.pat = "";
     $("pat").value = "";
     localStorage.removeItem(PAT_KEY);
-    say("Token tarayıcıdan silindi.", "ok");
+    say("Token tarayıcıdan silindi.");
   });
+
+  function wireEditor(kind) {
+    var id = function (suffix) {
+      return $(kind === "avatar" ? "avatar" + suffix : "banner" + suffix);
+    };
+    var view = id("View");
+    var zoom = id("Zoom");
+    var crop = function () {
+      return state.crops[kind];
+    };
+
+    zoom.addEventListener("input", function () {
+      var c = crop();
+      if (!c) return;
+      zoomCrop(c, Number(zoom.value) / 100);
+      renderView(kind);
+      regenerate(kind);
+    });
+    id("Reset").addEventListener("click", function () {
+      var c = crop();
+      if (!c) return;
+      state.crops[kind] = initCrop(c.img, RATIO[kind]);
+      zoom.value = 100;
+      renderView(kind);
+      regenerate(kind);
+    });
+
+    var dragging = false;
+    var lastX = 0;
+    var lastY = 0;
+    view.addEventListener("pointerdown", function (e) {
+      if (!crop()) return;
+      dragging = true;
+      lastX = e.clientX;
+      lastY = e.clientY;
+      view.classList.add("dragging");
+      view.setPointerCapture(e.pointerId);
+      e.preventDefault();
+    });
+    view.addEventListener("pointermove", function (e) {
+      if (!dragging) return;
+      var c = crop();
+      if (!c) return;
+      var rect = view.getBoundingClientRect();
+      var factor = c.sw / rect.width;
+      c.sx = clamp(c.sx - (e.clientX - lastX) * factor, 0, c.img.width - c.sw);
+      c.sy = clamp(c.sy - (e.clientY - lastY) * factor, 0, c.img.height - c.sh);
+      lastX = e.clientX;
+      lastY = e.clientY;
+      renderView(kind);
+    });
+    function endDrag() {
+      if (!dragging) return;
+      dragging = false;
+      view.classList.remove("dragging");
+      regenerate(kind);
+    }
+    view.addEventListener("pointerup", endDrag);
+    view.addEventListener("pointercancel", endDrag);
+    view.addEventListener("lostpointercapture", endDrag);
+  }
+  wireEditor("avatar");
+  wireEditor("banner");
+
   $("copyUrl").addEventListener("click", function () {
     var text = $("rawUrl").textContent;
     if (navigator.clipboard && navigator.clipboard.writeText) {

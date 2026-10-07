@@ -21,6 +21,7 @@
 
   var UUID_RE =
     /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+  var PAT_RE = /^(github_pat_[A-Za-z0-9]{20,}_[A-Za-z0-9]{20,}|gh[pousr]_[A-Za-z0-9]{20,})$/;
 
   var AVATAR_SIZE = 256;
   var BANNER_W = 1200;
@@ -37,7 +38,7 @@
   var state = {
     avatar: null,
     banner: null,
-    pat: localStorage.getItem(PAT_KEY) || "",
+    pat: (localStorage.getItem(PAT_KEY) || "").replace(/[^A-Za-z0-9_]/g, ""),
     crops: { avatar: null, banner: null },
   };
 
@@ -267,7 +268,12 @@
     } catch (ignored) {
       /* govde yok */
     }
-    if (response.status === 401) return "Token geçersiz veya süresi dolmuş (401)." + detail;
+    if (response.status === 401)
+      return (
+        "Token geçersiz veya süresi dolmuş (401)." +
+        detail +
+        " Token'ı GitHub'dan yeniden üret — değer yalnızca üretim ekranında görünür, listeden kopyalanamaz."
+      );
     if (response.status === 403)
       return "Token'ın bu depoda Contents yazma izni yok ya da kota doldu (403)." + detail;
     if (response.status === 404)
@@ -368,13 +374,38 @@
   $("fenridId").addEventListener("input", refresh);
   $("publish").addEventListener("click", publish);
 
+  var patTimer = null;
   $("pat").addEventListener("input", function () {
-    var v = $("pat").value.trim();
+    var raw = $("pat").value;
+    var v = raw.replace(/[^A-Za-z0-9_]/g, ""); /* bosluk/gorunmez/aksan temizligi */
+    if (v !== raw) $("pat").value = v;
     state.pat = v;
     if (v) localStorage.setItem(PAT_KEY, v);
     else localStorage.removeItem(PAT_KEY);
+    clearTimeout(patTimer);
+    patTimer = setTimeout(function () {
+      if (!state.pat) return;
+      if (!PAT_RE.test(state.pat)) {
+        say(
+          "Token biçimi tuhaf — github_pat_… ile başlamalı; yarım kopyalanmış olabilir.",
+          "err"
+        );
+      } else {
+        say(
+          "Token kaydedildi: " +
+            state.pat.slice(0, 13) +
+            "…" +
+            state.pat.slice(-4) +
+            " · " +
+            state.pat.length +
+            " karakter",
+          "ok"
+        );
+      }
+    }, 600);
   });
   $("patClear").addEventListener("click", function () {
+    clearTimeout(patTimer);
     state.pat = "";
     $("pat").value = "";
     localStorage.removeItem(PAT_KEY);

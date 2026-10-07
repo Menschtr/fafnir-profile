@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Fafnir Profil</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1>Fafnir Profil</h1>
+        <p class="sub">
+          Fenrid avatarını ve banner'ını buradan düzenle; dosya GitHub'a imzalı olarak yazılır ve
+          Fafnir uygulaması onu internetten çeker. <strong>Uygulama güncellemesi gerekmez.</strong>
+        </p>
+      </header>
+
+      <section>
+        <h2><span>1</span> Hesap</h2>
+        <label for="fenridId">Fenrid kullanıcı ID</label>
+        <input
+          type="text"
+          id="fenridId"
+          spellcheck="false"
+          autocomplete="off"
+          placeholder="21be3568-12af-44f0-b27d-3dada17ab43c"
+        />
+        <p class="hint">
+          ID yalnızca dosyada kayıt amaçlı saklanır; profilde görünmez. Boş bırakılamaz.
+        </p>
+      </section>
+
+      <section>
+        <h2><span>2</span> Görseller</h2>
+        <div class="row">
+          <div class="pick">
+            <strong>Avatar</strong>
+            <input type="file" id="avatarFile" accept="image/*" />
+            <p class="hint">Kare kırpılır, 256×256'ya küçültülür.</p>
+          </div>
+          <div class="pick">
+            <strong>Banner</strong>
+            <input type="file" id="bannerFile" accept="image/*" />
+            <p class="hint">Şeride kırpılır, 1200×420'ye küçültülür.</p>
+          </div>
+        </div>
+        <p class="sizes" id="sizes">görsel seçilmedi</p>
+      </section>
+
+      <section>
+        <h2><span>3</span> Önizleme</h2>
+        <div class="pv-card" aria-hidden="true">
+          <div class="pv-banner" id="pvBanner"></div>
+          <div class="pv-body">
+            <img class="pv-avatar" id="pvAvatar" alt="" />
+            <div class="pv-name">Fafnir</div>
+          </div>
+        </div>
+        <p class="hint" id="pvHint">
+          Görsel seçilmediğinde uygulama kendi gömülü görselini kullanır.
+        </p>
+      </section>
+
+      <section>
+        <h2><span>4</span> İmza ve yayın</h2>
+
+        <label for="pass">KARE şifresi</label>
+        <input type="password" id="pass" autocomplete="new-password" />
+        <p class="hint">
+          Bu şifre <strong>Fafnir → Ayarlar → Profil komuta merkezi</strong> ile aynı olmalıdır.
+          Şifre tarayıcıdan hiç çıkmaz; yalnızca anahtar türetilir.
+        </p>
+
+        <label for="pat">GitHub token (PAT)</label>
+        <div class="pat-row">
+          <input type="password" id="pat" autocomplete="off" spellcheck="false" />
+          <button type="button" id="patSave" class="ghost">Kaydet</button>
+          <button type="button" id="patForget" class="ghost">Unut</button>
+        </div>
+        <p class="hint" id="patHint">
+          Fine-grained token · tek repo · Contents: Read and write.
+          <a href="https://github.com/settings/tokens?type=beta" target="_blank" rel="noreferrer"
+            >Token oluştur</a
+          >
+        </p>
+
+        <div class="actions">
+          <button type="button" id="publish" class="primary">Kaydet ve yayınla</button>
+          <button type="button" id="verify">Doğrula</button>
+          <button type="button" id="download" class="ghost">İndir</button>
+        </div>
+        <p class="status" id="status" role="status" aria-live="polite"></p>
+      </section>
+
+      <section id="setupBox" hidden>
+        <h2><span>✓</span> Fafnir'e bağla</h2>
+        <ol>
+          <li>
+            Fafnir'de <strong>Ayarlar → Profil komuta merkezi</strong> adresine şunu yapıştır:
+            <div class="copy-row">
+              <code id="rawUrl"></code>
+              <button type="button" id="copyUrl" class="ghost">Kopyala</button>
+            </div>
+          </li>
+          <li>Aynı KARE şifresini yaz ve <strong>Kaydet</strong>'e bas.</li>
+          <li>Yenileme kısa süre içinde kendiliğinden yapılır; profil sayfasını yenile.</li>
+        </ol>
+      </section>
+
+      <footer>
+        <a href="https://github.com/Menschtr/fafnir-profile" target="_blank" rel="noreferrer"
+          >Kaynak (GitHub)</a
+        >
+        · Veriler public repoda saklanır · Token ve şifre yalnızca bu tarayıcıda durur
+      </footer>
+    </main>
+
+    <script src="kare.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

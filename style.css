@@ -1,0 +1,269 @@
+:root {
+  --bg: #0d0f14;
+  --card: #161a23;
+  --line: #262c3a;
+  --text: #e7eaf3;
+  --dim: #9aa3b8;
+  --accent: #7c5cff;
+  --ok: #4ade80;
+  --err: #f87171;
+  font-size: 16px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55;
+}
+
+main {
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 32px 20px 60px;
+}
+
+header h1 {
+  margin: 0 0 6px;
+  font-size: 26px;
+  letter-spacing: 0.5px;
+}
+
+.sub {
+  margin: 0 0 8px;
+  color: var(--dim);
+}
+
+section {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px 20px;
+  margin-top: 18px;
+}
+
+h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--dim);
+  margin: 0 0 14px;
+}
+
+h2 span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  font-size: 13px;
+}
+
+label {
+  display: block;
+  font-weight: 600;
+  margin: 12px 0 6px;
+}
+
+input[type="text"],
+input[type="password"],
+input[type="file"] {
+  width: 100%;
+  background: #0b0d12;
+  color: var(--text);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 15px;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.hint {
+  color: var(--dim);
+  font-size: 13px;
+  margin: 8px 0 0;
+}
+
+.hint a {
+  color: var(--accent);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.pick {
+  background: #10131b;
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.pick strong {
+  font-size: 14px;
+}
+
+.sizes {
+  margin: 12px 0 0;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 13px;
+  color: var(--dim);
+}
+
+.pv-card {
+  background: #10131b;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  max-width: 360px;
+}
+
+.pv-banner {
+  height: 105px;
+  background: linear-gradient(120deg, #2b2f45, #4b3a76);
+  background-size: cover;
+  background-position: center;
+}
+
+.pv-body {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 14px 14px;
+  margin-top: -30px;
+}
+
+.pv-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 4px solid #10131b;
+  background: #232838 center/cover;
+  object-fit: cover;
+}
+
+.pv-name {
+  font-weight: 700;
+  padding-top: 30px;
+}
+
+.pat-row {
+  display: flex;
+  gap: 8px;
+}
+
+.pat-row input {
+  flex: 1;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+button {
+  border: 1px solid var(--line);
+  background: #1d2230;
+  color: var(--text);
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: var(--accent);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+button.ghost {
+  background: transparent;
+}
+
+.status {
+  min-height: 22px;
+  margin: 12px 0 0;
+  font-size: 14px;
+  color: var(--dim);
+}
+
+.status.ok {
+  color: var(--ok);
+}
+
+.status.err {
+  color: var(--err);
+}
+
+ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+ol li {
+  margin-bottom: 10px;
+}
+
+.copy-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 6px;
+}
+
+code {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 13px;
+  background: #0b0d12;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 6px 8px;
+  overflow-wrap: anywhere;
+}
+
+footer {
+  margin-top: 26px;
+  color: var(--dim);
+  font-size: 13px;
+  text-align: center;
+}
+
+footer a {
+  color: var(--accent);
+}
+
+@media (max-width: 640px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}

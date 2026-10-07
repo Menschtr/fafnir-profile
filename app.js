@@ -173,7 +173,7 @@
 
     $("pvHint").textContent =
       state.avatar || state.banner
-        ? "Bir görsel seçilmediğinde uygulama kendi gömülü görselini kullanır."
+        ? "Seçilmeyen görsel için uygulama kendi gömülü görselini kullanır."
         : "Görsel seçilmediğinde uygulama kendi gömülü görselini kullanır.";
   }
 
